@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🚀 브레인 어드벤처</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --c0:#0a0e1a; --c1:#0d1b3e; --c2:#1a2f6b;
+  --star:#f9d923; --comet:#60efff; --planet:#ff6b9d;
+  --green:#39ff88; --orange:#ff9a3c; --red:#ff4d6d;
+  --white:#f0f4ff; --muted:#7892c4;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow-x:hidden}
+body{
+  font-family:'Noto Sans KR',sans-serif;
+  background:var(--c0); min-height:100vh;
+  color:var(--white);
+  display:flex; flex-direction:column; align-items:center;
+  padding-bottom:60px;
+}
+
+/* STARS */
+#starfield{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.star-dot{position:absolute;background:#fff;border-radius:50%;
+  animation:twinkle var(--d,3s) var(--delay,0s) infinite alternate}
+@keyframes twinkle{from{opacity:.2;transform:scale(1)}to{opacity:1;transform:scale(1.5)}}
+
+/* SCREENS */
+.screen{display:none;flex-direction:column;align-items:center;
+  position:relative;z-index:1;width:100%;max-width:560px;padding:0 16px}
+.screen.active{display:flex}
+
+/* ── GRADE SCREEN ── */
+#gradeScreen{padding-top:40px;gap:20px}
+.logo-icon{font-size:4rem;display:block;animation:float 3s ease-in-out infinite;text-align:center}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.logo-title{font-family:'Jua',cursive;font-size:2.4rem;color:var(--star);
+  text-shadow:0 0 30px #f9d92388;text-align:center;margin-top:8px}
+.logo-sub{color:var(--muted);font-size:.95rem;text-align:center}
+
+.subject-row{display:flex;gap:10px;width:100%}
+.subj-btn{
+  flex:1;padding:14px 10px;border-radius:16px;border:2px solid;
+  background:transparent;color:var(--white);
+  font-family:'Jua',cursive;font-size:1rem;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .2s;
+}
+.subj-btn .sicon{font-size:1.6rem}
+.subj-btn.math-btn{border-color:#60efff44;color:#60efff}
+.subj-btn.math-btn.active{background:#60efff22;border-color:#60efff;box-shadow:0 0 16px #60efff44}
+.subj-btn.eng-btn{border-color:#ff6b9d44;color:#ff6b9d}
+.subj-btn.eng-btn.active{background:#ff6b9d22;border-color:#ff6b9d;box-shadow:0 0 16px #ff6b9d44}
+
+.grade-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%}
+.grade-btn{
+  background:linear-gradient(135deg,var(--c2),#0d1b3e);
+  border:2px solid #1e3a8a;border-radius:18px;
+  padding:18px 8px;cursor:pointer;transition:all .2s;
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+}
+.grade-btn:active{transform:scale(.95)}
+.grade-btn .g-emoji{font-size:2rem}
+.grade-btn .g-name{font-family:'Jua',cursive;font-size:1rem;color:var(--star)}
+.grade-btn .g-desc{font-size:.68rem;color:var(--muted);text-align:center;line-height:1.3}
+.grade-btn .g-stars{color:var(--star);font-size:.75rem}
+.grade-btn.g1{border-color:#39ff8855}.grade-btn.g1:hover{border-color:#39ff88;box-shadow:0 0 20px #39ff8844}
+.grade-btn.g2{border-color:#60efff55}.grade-btn.g2:hover{border-color:#60efff;box-shadow:0 0 20px #60efff44}
+.grade-btn.g3{border-color:#f9d92355}.grade-btn.g3:hover{border-color:#f9d923;box-shadow:0 0 20px #f9d92344}
+.grade-btn.g4{border-color:#ff9a3c55}.grade-btn.g4:hover{border-color:#ff9a3c;box-shadow:0 0 20px #ff9a3c44}
+.grade-btn.g5{border-color:#ff6b9d55}.grade-btn.g5:hover{border-color:#ff6b9d;box-shadow:0 0 20px #ff6b9d44}
+.grade-btn.g6{border-color:#a78bfa55}.grade-btn.g6:hover{border-color:#a78bfa;box-shadow:0 0 20px #a78bfa44}
+
+/* ── QUIZ SCREEN ── */
+#quizScreen{padding-top:16px;gap:12px}
+
+.hud{width:100%;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.hud-grade{
+  font-family:'Jua',cursive;font-size:.9rem;
+  background:var(--c2);border:1.5px solid #1e3a8a;
+  border-radius:30px;padding:5px 14px;cursor:pointer;color:var(--comet);transition:all .15s;
+}
+.hud-grade:hover{border-color:var(--comet)}
+.hud-combo{
+  font-family:'Jua',cursive;font-size:.9rem;color:var(--orange);
+  background:#ff9a3c18;border:1.5px solid #ff9a3c44;
+  border-radius:30px;padding:5px 14px;opacity:0;transition:opacity .3s;
+}
+.hud-combo.show{opacity:1}
+.hud-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.hud-score{font-family:'Jua',cursive;font-size:1rem;color:var(--star)}
+.hud-lives{font-size:1.1rem;letter-spacing:2px}
+
+.prog-bar{width:100%;height:8px;background:#1a2f6b;border-radius:10px;overflow:hidden}
+.prog-fill{height:100%;border-radius:10px;transition:width .5s ease;
+  background:linear-gradient(90deg,var(--comet),var(--planet))}
+
+.q-card{
+  width:100%;background:linear-gradient(135deg,#0d1b3e,#1a1040);
+  border:1.5px solid #2d3f80;border-radius:24px;padding:22px 20px;
+  position:relative;overflow:hidden;
+}
+.q-card::before{
+  content:'';position:absolute;top:-40px;right:-40px;
+  width:160px;height:160px;border-radius:50%;
+  background:radial-gradient(circle,rgba(96,239,255,.07),transparent 70%);
+}
+.q-meta{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.q-type-badge{font-size:.7rem;font-weight:700;border-radius:8px;padding:3px 10px;letter-spacing:.5px}
+.badge-story  {background:#1e3a5f;color:var(--comet)}
+.badge-pattern{background:#2d1b4e;color:#c084fc}
+.badge-logic  {background:#1a3d2b;color:var(--green)}
+.badge-word   {background:#3d1a1a;color:#fca5a5}
+.badge-grammar{background:#2d2a0e;color:var(--star)}
+.q-num{color:var(--muted);font-size:.8rem}
+.q-text{font-size:1.2rem;font-weight:700;line-height:1.7;color:var(--white);white-space:pre-line}
+
+.hint-row{display:flex;align-items:center;gap:10px;width:100%}
+.hint-btn{
+  background:transparent;border:1.5px solid #f9d92344;
+  color:var(--star);border-radius:12px;padding:7px 14px;
+  font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s;
+}
+.hint-btn:hover{background:#f9d92311;border-color:var(--star)}
+.hint-cost{font-size:.78rem;color:var(--muted)}
+.hint-box{
+  width:100%;background:#1a1500;border:1.5px solid #f9d92366;
+  border-radius:14px;padding:12px 16px;font-size:.88rem;color:#fde68a;
+  line-height:1.6;display:none;animation:fadeIn .3s ease;
+}
+.hint-box.show{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+
+/* CANVAS */
+.canvas-outer{
+  width:100%;background:#070d1e;
+  border:1.5px dashed #2d3f80;border-radius:20px;
+  overflow:hidden;position:relative;
+  touch-action:none;
+  -webkit-user-select:none;user-select:none;
+}
+.canvas-outer canvas{
+  display:block;width:100%;
+  touch-action:none;
+  -webkit-touch-callout:none;
+  -webkit-user-select:none;
+}
+.canvas-hint{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  color:#2d3f80;font-size:.9rem;text-align:center;pointer-events:none;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  transition:opacity .2s;
+}
+.canvas-hint .ch-icon{font-size:2rem}
+
+.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.t-btn{
+  border:none;border-radius:12px;padding:8px 13px;
+  font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;gap:4px;
+}
+.t-btn:active{transform:scale(.93)}
+.btn-clear{background:#ff4d6d22;color:var(--red);border:1px solid #ff4d6d44}
+.btn-undo {background:#f9d92322;color:var(--star);border:1px solid #f9d92344}
+.cdot{width:26px;height:26px;border-radius:50%;border:3px solid transparent;cursor:pointer;transition:border-color .15s;flex-shrink:0}
+.cdot.sel{border-color:#fff}
+.pen-wrap{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--muted)}
+.pen-wrap input{width:65px;accent-color:var(--comet)}
+
+.btn-submit{
+  width:100%;padding:16px;border:none;border-radius:20px;
+  background:linear-gradient(135deg,#2563eb,#7c3aed);
+  color:#fff;font-family:'Jua',cursive;font-size:1.1rem;cursor:pointer;
+  box-shadow:0 4px 24px #2563eb44;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-submit:active{transform:scale(.97)}
+.btn-submit:disabled{opacity:.4;cursor:not-allowed}
+
+.result-card{
+  width:100%;border-radius:20px;padding:18px 20px;
+  display:none;animation:fadeIn .3s ease;
+}
+.result-card.show{display:block}
+.result-card.correct{background:#0a2a1a;border:1.5px solid var(--green)}
+.result-card.wrong  {background:#2a0a0a;border:1.5px solid var(--red)}
+.result-card.loading{background:#1a1200;border:1.5px solid var(--star)}
+.res-title{font-family:'Jua',cursive;font-size:1.35rem;margin-bottom:6px}
+.res-body{font-size:.9rem;color:#b0c0e0;line-height:1.7}
+.res-answer{
+  margin-top:10px;background:rgba(255,255,255,.06);
+  border-radius:10px;padding:9px 14px;font-size:.88rem;color:var(--white);font-weight:700;
+}
+
+.btn-next{
+  width:100%;padding:15px;border:none;border-radius:20px;
+  background:linear-gradient(135deg,#059669,#0d9488);
+  color:#fff;font-family:'Jua',cursive;font-size:1rem;cursor:pointer;
+  display:none;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 4px 20px #05966944;transition:all .2s;
+}
+.btn-next.show{display:flex}
+.btn-next:active{transform:scale(.97)}
+
+/* ── FINISH SCREEN ── */
+#finishScreen{padding-top:60px;gap:16px;text-align:center}
+.finish-planet{font-size:5rem;animation:float 3s ease-in-out infinite}
+.finish-title{font-family:'Jua',cursive;font-size:2rem;color:var(--star);text-shadow:0 0 30px #f9d92366}
+.star-display{font-size:2.5rem;letter-spacing:4px}
+.finish-score-big{font-family:'Jua',cursive;font-size:3rem;color:var(--comet)}
+.finish-stats{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.stat-box{background:var(--c1);border:1.5px solid #1e3a8a;border-radius:16px;padding:14px;text-align:center}
+.stat-num{font-family:'Jua',cursive;font-size:1.6rem;color:var(--star)}
+.stat-lbl{font-size:.75rem;color:var(--muted);margin-top:2px}
+.finish-msg{font-size:1rem;color:var(--muted);max-width:320px;line-height:1.6}
+.btn-again{
+  padding:15px 40px;background:linear-gradient(135deg,var(--planet),#7c3aed);
+  border:none;border-radius:20px;color:#fff;font-family:'Jua',cursive;
+  font-size:1.05rem;cursor:pointer;box-shadow:0 4px 20px #ff6b9d44;transition:all .2s;
+}
+.btn-again:active{transform:scale(.97)}
+
+/* EFFECTS */
+.confetti-wrap{position:fixed;inset:0;pointer-events:none;z-index:999}
+.cf{position:absolute;border-radius:2px;
+  animation:fall var(--d,1.5s) var(--dl,0s) ease-in forwards}
+@keyframes fall{
+  0%{transform:translateY(-20px) rotate(0) translateX(0);opacity:1}
+  100%{transform:translateY(100vh) rotate(720deg) translateX(var(--dx,0px));opacity:0}
+}
+.combo-burst{
+  position:fixed;top:30%;left:50%;transform:translate(-50%,-50%);
+  font-family:'Jua',cursive;font-size:2rem;color:var(--orange);
+  text-shadow:0 0 20px #ff9a3caa;pointer-events:none;z-index:999;
+  display:none;animation:burst .8s ease forwards;
+}
+@keyframes burst{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}
+  30%{opacity:1;transform:translate(-50%,-50%) scale(1.3)}
+  80%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-60%) scale(.9)}
+}
+.loading-dots span{display:inline-block;animation:bounce .7s infinite}
+.loading-dots span:nth-child(2){animation-delay:.15s}
+.loading-dots span:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-8px)}}
+
+@media(max-width:400px){
+  .q-text{font-size:1.05rem}
+  .logo-title{font-size:2rem}
+  .grade-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<div id="starfield"></div>
+<div class="combo-burst" id="comboBurst"></div>
+
+<!-- ═══ GRADE SCREEN ═══ -->
+<div class="screen active" id="gradeScreen">
+  <span class="logo-icon">🚀</span>
+  <div class="logo-title">브레인 어드벤처</div>
+  <div class="logo-sub">생각하는 힘을 키워요!</div>
+
+  <div class="subject-row">
+    <button class="subj-btn math-btn active" id="subjMath" onclick="selectSubject('math')">
+      <span class="sicon">🔢</span>수학
+    </button>
+    <button class="subj-btn eng-btn" id="subjEng" onclick="selectSubject('english')">
+      <span class="sicon">🔤</span>영어
+    </button>
+  </div>
+
+  <div class="grade-grid">
+    <button class="grade-btn g1" onclick="startQuiz(1)">
+      <span class="g-emoji">🌱</span><span class="g-name">1학년</span>
+      <span class="g-desc">기초 탐험</span><span class="g-stars">★☆☆☆☆☆</span>
+    </button>
+    <button class="grade-btn g2" onclick="startQuiz(2)">
+      <span class="g-emoji">🌊</span><span class="g-name">2학년</span>
+      <span class="g-desc">기초 심화</span><span class="g-stars">★★☆☆☆☆</span>
+    </button>
+    <button class="grade-btn g3" onclick="startQuiz(3)">
+      <span class="g-emoji">⚡</span><span class="g-name">3학년</span>
+      <span class="g-desc">논리 시작</span><span class="g-stars">★★★☆☆☆</span>
+    </button>
+    <button class="grade-btn g4" onclick="startQuiz(4)">
+      <span class="g-emoji">🔥</span><span class="g-name">4학년</span>
+      <span class="g-desc">응용 도전</span><span class="g-stars">★★★★☆☆</span>
+    </button>
+    <button class="grade-btn g5" onclick="startQuiz(5)">
+      <span class="g-emoji">🪐</span><span class="g-name">5학년</span>
+      <span class="g-desc">심화 탐구</span><span class="g-stars">★★★★★☆</span>
+    </button>
+    <button class="grade-btn g6" onclick="startQuiz(6)">
+      <span class="g-emoji">🌌</span><span class="g-name">6학년</span>
+      <span class="g-desc">최고 난이도</span><span class="g-stars">★★★★★★</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══ QUIZ SCREEN ═══ -->
+<div class="screen" id="quizScreen">
+  <div class="hud">
+    <button class="hud-grade" onclick="goHome()" id="hudGrade">🚀 1학년</button>
+    <div class="hud-combo" id="hudCombo">🔥 콤보 ×0</div>
+    <div class="hud-right">
+      <div class="hud-score">⭐ <span id="scoreDisp">0</span></div>
+      <div class="hud-lives" id="livesDisp">❤️❤️❤️</div>
+    </div>
+  </div>
+
+  <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+
+  <div class="q-card">
+    <div class="q-meta">
+      <span class="q-type-badge" id="qTypeBadge">📖 스토리</span>
+      <span class="q-num" id="qNum">1 / 8</span>
+    </div>
+    <div class="q-text" id="qText">문제 로딩 중...</div>
+  </div>
+
+  <div class="hint-row">
+    <button class="hint-btn" onclick="toggleHint()">💡 힌트 보기</button>
+    <span class="hint-cost">힌트 사용 시 -2점</span>
+  </div>
+  <div class="hint-box" id="hintBox"></div>
+
+  <div class="canvas-outer" id="canvasOuter">
+    <canvas id="drawCanvas"></canvas>
+    <div class="canvas-hint" id="canvasHint">
+      <span class="ch-icon">✍️</span>
+      <span>풀이와 답을 여기에 쓰세요</span>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <button class="t-btn btn-clear" onclick="clearCanvas()">🗑️ 지우기</button>
+    <button class="t-btn btn-undo"  onclick="undoStroke()">↩️ 되돌리기</button>
+    <div class="cdot sel" style="background:#f0f4ff" data-c="#f0f4ff" onclick="setColor(this)"></div>
+    <div class="cdot"     style="background:#ff4d6d" data-c="#ff4d6d" onclick="setColor(this)"></div>
+    <div class="cdot"     style="background:#60efff" data-c="#60efff" onclick="setColor(this)"></div>
+    <div class="cdot"     style="background:#39ff88" data-c="#39ff88" onclick="setColor(this)"></div>
+    <div class="pen-wrap">🖊️<input type="range" min="2" max="16" value="4" oninput="penSz=+this.value"></div>
+  </div>
+
+  <button class="btn-submit" id="submitBtn" onclick="submitAnswer()">🤖 AI 채점하기</button>
+
+  <div class="result-card" id="resultCard">
+    <div class="res-title" id="resTitle"></div>
+    <div class="res-body"  id="resBody"></div>
+    <div class="res-answer" id="resAnswer" style="display:none"></div>
+  </div>
+
+  <button class="btn-next" id="nextBtn" onclick="nextQuestion()">다음 문제 →</button>
+</div>
+
+<!-- ═══ FINISH SCREEN ═══ -->
+<div class="screen" id="finishScreen">
+  <div class="finish-planet" id="finPlanet">🏆</div>
+  <div class="finish-title">퀴즈 완료!</div>
+  <div class="star-display" id="finStars">☆☆☆☆☆</div>
+  <div class="finish-score-big" id="finScore">0점</div>
+  <div class="finish-stats">
+    <div class="stat-box"><div class="stat-num" id="statCorrect">0</div><div class="stat-lbl">✅ 정답</div></div>
+    <div class="stat-box"><div class="stat-num" id="statCombo">0</div><div class="stat-lbl">🔥 최고 콤보</div></div>
+    <div class="stat-box"><div class="stat-num" id="statHints">0</div><div class="stat-lbl">💡 힌트 사용</div></div>
+    <div class="stat-box"><div class="stat-num" id="statGrade">-</div><div class="stat-lbl">🏫 학년</div></div>
+  </div>
+  <div class="finish-msg" id="finMsg"></div>
+  <button class="btn-again" onclick="goHome()">🚀 다시 시작</button>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  QUESTION BANK
+// ══════════════════════════════════════════════════════
+const QB = {
+  math: {
+    1:[
+      {type:'story',badge:'badge-story',text:'사탕이 3개 있었어요. 친구에게 2개를 더 받았어요.\n지금 사탕은 모두 몇 개인가요?',answer:'5',hint:'처음 개수와 받은 개수를 합쳐요'},
+      {type:'story',badge:'badge-story',text:'버스에 어른이 4명, 어린이가 5명 타고 있어요.\n버스에 탄 사람은 모두 몇 명인가요?',answer:'9',hint:'어른 수 + 어린이 수 = ?'},
+      {type:'pattern',badge:'badge-pattern',text:'규칙을 찾아 빈칸을 채우세요.\n1, 2, 3, 4, ___',answer:'5',hint:'1씩 커지는 규칙이에요'},
+      {type:'story',badge:'badge-story',text:'사과가 10개 있어요. 3개를 먹었어요.\n남은 사과는 몇 개인가요?',answer:'7',hint:'10에서 먹은 수를 빼요'},
+      {type:'pattern',badge:'badge-pattern',text:'빈칸에 알맞은 수를 쓰세요.\n2, 4, 6, 8, ___',answer:'10',hint:'2씩 커지는 규칙이에요'},
+      {type:'logic',badge:'badge-logic',text:'나는 5보다 크고 8보다 작아요.\n나는 누구일까요? (모두 쓰세요)',answer:'6,7',hint:'5 초과, 8 미만의 수는?'},
+      {type:'story',badge:'badge-story',text:'병아리가 왼쪽에 6마리, 오른쪽에 3마리 있어요.\n왼쪽이 오른쪽보다 몇 마리 더 많을까요?',answer:'3',hint:'6 - 3 = ?'},
+      {type:'logic',badge:'badge-logic',text:'나는 10보다 작은 홀수예요.\n나를 모두 쓰세요.',answer:'1,3,5,7,9',hint:'홀수: 1, 3, 5, 7, 9...'},
+    ],
+    2:[
+      {type:'story',badge:'badge-story',text:'피자 한 판을 8조각으로 잘랐어요.\n4명이 똑같이 나눠 먹으면 한 명이 몇 조각씩 먹을 수 있나요?',answer:'2',hint:'8 ÷ 4 = ?'},
+      {type:'pattern',badge:'badge-pattern',text:'규칙을 찾아 빈칸을 채우세요.\n3, 6, 9, 12, ___',answer:'15',hint:'3단 구구단이에요'},
+      {type:'logic',badge:'badge-logic',text:'나는 두 자리 수예요. 십의 자리는 4, 일의 자리는 7이에요.\n나는 무슨 수일까요?',answer:'47',hint:'십의 자리×10 + 일의 자리'},
+      {type:'story',badge:'badge-story',text:'줄넘기를 어제는 25번, 오늘은 37번 했어요.\n이틀 동안 모두 몇 번 했나요?',answer:'62',hint:'25 + 37, 일의 자리부터 더해요'},
+      {type:'pattern',badge:'badge-pattern',text:'빈칸에 알맞은 수는?\n100, 90, 80, 70, ___',answer:'60',hint:'10씩 줄어드는 규칙이에요'},
+      {type:'logic',badge:'badge-logic',text:'30보다 크고 40보다 작은 수 중에서\n짝수를 모두 쓰세요.',answer:'32,34,36,38',hint:'30~40 사이 짝수: 32, 34...'},
+      {type:'story',badge:'badge-story',text:'색종이가 4묶음 있고 한 묶음에 5장씩 있어요.\n색종이는 모두 몇 장인가요?',answer:'20',hint:'4 × 5 = ?'},
+      {type:'logic',badge:'badge-logic',text:'어떤 수에 3을 더하면 10이 돼요.\n어떤 수는 무엇인가요?',answer:'7',hint:'10 - 3 = ?'},
+    ],
+    3:[
+      {type:'story',badge:'badge-story',text:'과자 한 봉지에 24개가 들어 있어요.\n3봉지를 사면 모두 몇 개인가요?',answer:'72',hint:'24 × 3 = ?'},
+      {type:'pattern',badge:'badge-pattern',text:'다음 수열의 규칙을 찾아 빈칸을 채우세요.\n1, 4, 9, 16, ___',answer:'25',hint:'1², 2², 3², 4², 5²... 제곱수예요!'},
+      {type:'logic',badge:'badge-logic',text:'어떤 수에 6을 곱했더니 54가 되었어요.\n어떤 수는 무엇일까요?',answer:'9',hint:'54 ÷ 6 = ?'},
+      {type:'story',badge:'badge-story',text:'버스 1대에 45명이 탈 수 있어요.\n3대에는 모두 몇 명이 탈 수 있나요?',answer:'135',hint:'45 × 3을 계산해요'},
+      {type:'logic',badge:'badge-logic',text:'두 수의 합이 20이고, 차가 4예요.\n두 수를 구하세요. (큰 수, 작은 수 순서로)',answer:'12,8',hint:'(20+4)÷2 = 큰 수'},
+      {type:'pattern',badge:'badge-pattern',text:'빈칸에 알맞은 수는?\n2, 6, 18, 54, ___',answer:'162',hint:'3씩 곱해지는 규칙이에요'},
+      {type:'story',badge:'badge-story',text:'사탕 96개를 한 봉지에 8개씩 담으려 해요.\n봉지는 몇 개 필요한가요?',answer:'12',hint:'96 ÷ 8 = ?'},
+      {type:'logic',badge:'badge-logic',text:'1부터 10까지의 합을 구하세요.\n(규칙을 찾아보세요!)',answer:'55',hint:'(1+10) × 5 = ? 짝을 지어봐요'},
+    ],
+    4:[
+      {type:'story',badge:'badge-story',text:'직사각형의 가로가 8cm, 세로가 5cm예요.\n이 직사각형의 넓이는 몇 cm²인가요?',answer:'40',hint:'넓이 = 가로 × 세로'},
+      {type:'logic',badge:'badge-logic',text:'1부터 10까지의 수를 모두 더하면 얼마인가요?\n(규칙을 찾아 계산해보세요)',answer:'55',hint:'(1+10)×10÷2 = ?'},
+      {type:'pattern',badge:'badge-pattern',text:'규칙을 찾아 빈칸을 채우세요.\n1, 1, 2, 3, 5, 8, ___',answer:'13',hint:'앞의 두 수를 더하면 다음 수가 돼요'},
+      {type:'story',badge:'badge-story',text:'달리기 트랙이 400m예요.\n5바퀴를 돌면 모두 몇 km인가요?',answer:'2',hint:'400×5=2000m, 1km=1000m'},
+      {type:'logic',badge:'badge-logic',text:'어떤 수를 4로 나누면 몫이 7이고 나머지가 3이에요.\n어떤 수는 무엇인가요?',answer:'31',hint:'수 = 몫×나누는수 + 나머지'},
+      {type:'story',badge:'badge-story',text:'케이크를 6등분했어요. 민지는 2조각, 철수는 1조각 먹었어요.\n두 사람이 먹은 케이크는 전체의 몇 분의 몇인가요?',answer:'1/2',hint:'2+1=3조각, 3/6을 약분하면?'},
+      {type:'logic',badge:'badge-logic',text:'3개의 연속된 홀수의 합이 27이에요.\n가장 작은 수는 무엇인가요?',answer:'7',hint:'가운데 수가 27÷3=9, 그럼 9-2는?'},
+      {type:'pattern',badge:'badge-pattern',text:'빈칸에 알맞은 수는?\n1, 3, 6, 10, 15, ___',answer:'21',hint:'더하는 수가 1씩 늘어나요: +2, +3, +4...'},
+    ],
+    5:[
+      {type:'story',badge:'badge-story',text:'원래 가격이 12,000원인 물건이 25% 할인되었어요.\n얼마에 살 수 있나요?',answer:'9000',hint:'12000 × 0.75 = ?'},
+      {type:'logic',badge:'badge-logic',text:'어떤 수의 약수를 모두 더했더니 12가 되었어요.\n그 수는 무엇일까요?',answer:'6',hint:'6의 약수: 1,2,3,6 → 합=12!'},
+      {type:'pattern',badge:'badge-pattern',text:'규칙을 찾아 빈칸을 채우세요.\n1/2, 1/4, 1/8, 1/16, ___',answer:'1/32',hint:'분모가 2배씩 커져요'},
+      {type:'story',badge:'badge-story',text:'자동차가 시속 60km로 달려요.\n2시간 30분 동안 달리면 몇 km를 가나요?',answer:'150',hint:'60 × 2.5 = ?'},
+      {type:'logic',badge:'badge-logic',text:'두 수의 최대공약수가 4이고, 최소공배수가 24예요.\n두 수의 곱은 얼마인가요?',answer:'96',hint:'두 수의 곱 = 최대공약수 × 최소공배수'},
+      {type:'story',badge:'badge-story',text:'삼각형의 밑변이 10cm, 높이가 6cm예요.\n넓이는 몇 cm²인가요?',answer:'30',hint:'삼각형 넓이 = 밑변 × 높이 ÷ 2'},
+      {type:'logic',badge:'badge-logic',text:'1부터 100까지 홀수의 합을 구하세요.\n(규칙을 찾아 계산해봐요!)',answer:'2500',hint:'홀수가 50개, 50 × 50 = ?'},
+      {type:'pattern',badge:'badge-pattern',text:'빈칸에 알맞은 수는?\n2, 3, 5, 7, 11, 13, ___',answer:'17',hint:'소수(prime)의 수열이에요!'},
+    ],
+    6:[
+      {type:'story',badge:'badge-story',text:'소금물 200g에 소금이 30g 녹아있어요.\n소금물의 농도는 몇 %인가요?',answer:'15',hint:'농도(%) = 소금÷소금물×100'},
+      {type:'logic',badge:'badge-logic',text:'원주율(π)을 3.14로 할 때,\n반지름이 5cm인 원의 넓이는?',answer:'78.5',hint:'넓이 = π × r² = 3.14 × 25'},
+      {type:'logic',badge:'badge-logic',text:'3자리 수 A5B가 9의 배수예요.\nA+B는 얼마인가요?',answer:'4',hint:'9의 배수: 각 자리 합이 9의 배수\nA+5+B = 9'},
+      {type:'story',badge:'badge-story',text:'원금 100,000원을 연이율 5%로\n2년간 단리로 맡기면 이자는 얼마인가요?',answer:'10000',hint:'이자 = 원금 × 이율 × 기간'},
+      {type:'story',badge:'badge-story',text:'원기둥의 밑면 반지름이 3cm, 높이가 10cm예요.\n부피는 얼마인가요? (π=3.14)',answer:'282.6',hint:'부피 = π × r² × h'},
+      {type:'logic',badge:'badge-logic',text:'어떤 수를 7로 나누면 나머지가 3이에요.\n이 수에 4를 더하면 7로 나누었을 때 나머지는?',answer:'0',hint:'3+4=7, 7을 7로 나누면 나머지는?'},
+      {type:'pattern',badge:'badge-pattern',text:'빈칸에 알맞은 수는?\n1, 8, 27, 64, ___',answer:'125',hint:'1³, 2³, 3³, 4³, 5³...세제곱수예요!'},
+      {type:'logic',badge:'badge-logic',text:'두 자리 수가 있어요. 각 자리 숫자의 합은 9이고\n십의 자리와 일의 자리를 바꾸면 원래 수보다 27이 커요.\n원래 수는 무엇인가요?',answer:'36',hint:'십의 자리를 a, 일의 자리를 b로 놓으면\na+b=9, b-a=3'},
+    ]
+  },
+  english: {
+    1:[
+      {type:'word',badge:'badge-word',text:'🌈 무지개를 영어로 쓰세요.',answer:'rainbow',hint:'rain(비) + bow(활 모양)'},
+      {type:'word',badge:'badge-word',text:'🦁 사자를 영어로 쓰세요.',answer:'lion',hint:'l-i-o-n'},
+      {type:'word',badge:'badge-word',text:'🌸 꽃을 영어로 쓰세요.',answer:'flower',hint:'f-l-o-w-e-r'},
+      {type:'grammar',badge:'badge-grammar',text:'빈칸에 알맞은 말을 쓰세요.\nI ___ happy.',answer:'am',hint:'I 다음에는 am을 써요'},
+      {type:'word',badge:'badge-word',text:'🏠 집을 영어로 쓰세요.',answer:'house',hint:'h-o-u-s-e'},
+      {type:'grammar',badge:'badge-grammar',text:'빈칸에 알맞은 말을 쓰세요.\nThis is ___ apple.',answer:'an',hint:'모음(a,e,i,o,u)으로 시작하면 an'},
+      {type:'word',badge:'badge-word',text:'⭐ 별을 영어로 쓰세요.',answer:'star',hint:'s-t-a-r'},
+      {type:'word',badge:'badge-word',text:'🐬 돌고래를 영어로 쓰세요.',answer:'dolphin',hint:'dol-phin'},
+    ],
+    2:[
+      {type:'grammar',badge:'badge-grammar',text:'빈칸에 알맞은 말을 쓰세요.\nShe ___ a dog.',answer:'has',hint:'have의 3인칭 단수형은 has'},
+      {type:'word',badge:'badge-word',text:'🌍 지구를 영어로 쓰세요.',answer:'earth',hint:'e-a-r-t-h'},
+      {type:'grammar',badge:'badge-grammar',text:'복수형을 쓰세요.\none book → two ___',answer:'books',hint:'book에 -s를 붙여요'},
+      {type:'word',badge:'badge-word',text:'🦋 나비를 영어로 쓰세요.',answer:'butterfly',hint:'butter + fly'},
+      {type:'grammar',badge:'badge-grammar',text:'빈칸에 알맞은 말을 쓰세요.\nThey ___ students.',answer:'are',hint:'they/we/you 다음에는 are'},
+      {type:'word',badge:'badge-word',text:'🌙 달을 영어로 쓰세요.',answer:'moon',hint:'m-o-o-n'},
+      {type:'grammar',badge:'badge-grammar',text:'빈칸에 알맞은 말을 쓰세요.\nI ___ to school every day.',answer:'go',hint:'I 다음 일반동사는 원형'},
+      {type:'word',badge:'badge-word',text:'🐘 코끼리를 영어로 쓰세요.',answer:'elephant',hint:'el-e-phant'},
+    ],
+    3:[
+      {type:'grammar',badge:'badge-grammar',text:'현재형을 과거형으로 바꾸세요.\nI eat rice. → I ___ rice yesterday.',answer:'ate',hint:'eat의 과거형은 불규칙: ate'},
+      {type:'word',badge:'badge-word',text:'다음 단어의 반대말을 쓰세요.\nhappy → ___',answer:'sad',hint:'기쁨의 반대는 슬픔'},
+      {type:'grammar',badge:'badge-grammar',text:'빈칸에 알맞은 말을 쓰세요.\nShe ___ TV last night.',answer:'watched',hint:'watch + ed (규칙 과거형)'},
+      {type:'word',badge:'badge-word',text:'다음 단어의 반대말을 쓰세요.\nbig → ___',answer:'small',hint:'크다의 반대는 작다'},
+      {type:'grammar',badge:'badge-grammar',text:'빈칸에 알맞은 말을 쓰세요.\nThere ___ many birds in the sky.',answer:'are',hint:'birds가 복수이므로 are'},
+      {type:'word',badge:'badge-word',text:'🌡️ 온도를 영어로 쓰세요.',answer:'temperature',hint:'tem-per-a-ture'},
+      {type:'grammar',badge:'badge-grammar',text:'두 문장을 한 문장으로 만드세요.\nI like cats. I like dogs.\nI like cats ___ dogs.',answer:'and',hint:'두 가지를 연결할 때는 and'},
+      {type:'word',badge:'badge-word',text:'🏆 승리를 영어로 쓰세요.',answer:'victory',hint:'vic-to-ry'},
+    ],
+    4:[
+      {type:'grammar',badge:'badge-grammar',text:'빈칸에 알맞은 말을 쓰세요.\nIf it ___, I will stay home.',answer:'rains',hint:'if절은 현재형으로 미래를 나타내요'},
+      {type:'word',badge:'badge-word',text:'big과 비슷한 뜻을 가진 단어를 쓰세요.',answer:'large',hint:'크다 = big = large = huge'},
+      {type:'grammar',badge:'badge-grammar',text:'수동태로 바꾸세요.\nShe reads the book.\n→ The book ___ ___ by her.',answer:'is read',hint:'be동사 + 과거분사(p.p.)'},
+      {type:'word',badge:'badge-word',text:'🏗️ 건축을 영어로 쓰세요.',answer:'construction',hint:'con-struc-tion'},
+      {type:'grammar',badge:'badge-grammar',text:'빈칸에 알맞은 말을 쓰세요.\nI have never ___ to Japan.',answer:'been',hint:'have + 과거분사: go → gone → been'},
+      {type:'word',badge:'badge-word',text:'영어 표현의 뜻을 한국어로 쓰세요.\n"hit two birds with one stone"',answer:'일석이조',hint:'돌 하나로 새 두 마리를 잡다'},
+      {type:'grammar',badge:'badge-grammar',text:'빈칸에 알맞은 말을 쓰세요.\nThis is the movie ___ I watched last week.',answer:'that',hint:'관계대명사: 사물 → that 또는 which'},
+      {type:'word',badge:'badge-word',text:'🔬 현미경을 영어로 쓰세요.',answer:'microscope',hint:'micro(작은) + scope(보다)'},
+    ],
+    5:[
+      {type:'grammar',badge:'badge-grammar',text:'관계대명사로 연결하세요.\nI know a boy. He can speak French.\n→ I know a boy ___ can speak French.',answer:'who',hint:'사람을 수식할 때는 who'},
+      {type:'word',badge:'badge-word',text:'difficult의 명사형을 쓰세요.',answer:'difficulty',hint:'difficult + y'},
+      {type:'grammar',badge:'badge-grammar',text:'빈칸에 알맞은 말을 쓰세요.\nBy the time she arrived, I ___ finished.',answer:'had',hint:'과거완료: had + p.p.'},
+      {type:'word',badge:'badge-word',text:'영어 속담의 빈칸을 채우세요.\n"Actions speak louder than ___"',answer:'words',hint:'행동이 말보다 큰 소리를 낸다'},
+      {type:'grammar',badge:'badge-grammar',text:'빈칸에 알맞은 말을 쓰세요.\nShe suggested ___ to the park.',answer:'going',hint:'suggest는 동명사(-ing)를 목적어로 취해요'},
+      {type:'word',badge:'badge-word',text:'"optimistic"의 반의어를 쓰세요.',answer:'pessimistic',hint:'낙관적 ↔ 비관적'},
+      {type:'grammar',badge:'badge-grammar',text:'빈칸에 알맞은 말을 쓰세요.\nI wish I ___ taller.',answer:'were',hint:'가정법: I wish + 과거형(were)'},
+      {type:'word',badge:'badge-word',text:'"bene-"가 들어간 단어를 쓰세요.\n(이익, 혜택을 뜻하는 명사)',answer:'benefit',hint:'bene(좋은) + fit'},
+    ],
+    6:[
+      {type:'grammar',badge:'badge-grammar',text:'빈칸에 알맞은 말을 쓰세요.\nHad I known the truth, I ___ ___ told you.',answer:'would have',hint:'가정법 과거완료: would have + p.p.'},
+      {type:'word',badge:'badge-word',text:'"ephemeral"의 뜻을 한국어로 쓰세요.',answer:'덧없는',hint:'epi(위에) + hemera(날) → 하루살이 같은'},
+      {type:'grammar',badge:'badge-grammar',text:'강조구문으로 바꾸세요.\nShe broke the window.\n→ It was ___ ___ broke the window.',answer:'she who',hint:'It was + 강조대상 + that/who + 나머지'},
+      {type:'word',badge:'badge-word',text:'다음 표현의 뜻을 한국어로 쓰세요.\n"barking up the wrong tree"',answer:'헛수고하다',hint:'잘못된 나무에 짖고 있다'},
+      {type:'grammar',badge:'badge-grammar',text:'빈칸에 알맞은 말을 쓰세요.\nThe more you practice, ___ better you get.',answer:'the',hint:'"the 비교급, the 비교급" 구문'},
+      {type:'grammar',badge:'badge-grammar',text:'빈칸에 알맞은 말을 쓰세요.\nNo sooner ___ I arrived than it started raining.',answer:'had',hint:'No sooner had + 주어 + p.p. 도치구문'},
+      {type:'word',badge:'badge-word',text:'"ambiguous"의 뜻을 한국어로 쓰세요.',answer:'모호한',hint:'ambi(양쪽) + agere(이끌다) → 두 방향으로 이끌리는'},
+      {type:'grammar',badge:'badge-grammar',text:'빈칸에 알맞은 말을 쓰세요.\nIt is time you ___ to bed.',answer:'went',hint:'It is time + 주어 + 과거형'},
+    ]
+  }
+};
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+let grade = 1, subject = 'math';
+let currentQ = null, qIndex = 0;
+let score = 0, correctCount = 0, comboCount = 0, maxCombo = 0;
+let lives = 3, hintsUsed = 0, hintUsedThisQ = false;
+let usedIndices = [];
+const TOTAL = 8;
+
+// ══════════════════════════════════════════════════════
+//  CANVAS
+// ══════════════════════════════════════════════════════
+let canvas, ctx, drawing = false;
+let penColor = '#f0f4ff', penSz = 4;
+let strokes = [], curStroke = [];
+let touchActive = false;
+
+function initCanvas() {
+  canvas = document.getElementById('drawCanvas');
+  ctx = canvas.getContext('2d');
+  canvas.addEventListener('pointerdown', sd, {passive:false});
+  canvas.addEventListener('pointermove', dr, {passive:false});
+  canvas.addEventListener('pointerup',   ed, {passive:false});
+  canvas.addEventListener('pointercancel', ed, {passive:false});
+  canvas.addEventListener('touchstart', tsd, {passive:false});
+  canvas.addEventListener('touchmove',  tdr, {passive:false});
+  canvas.addEventListener('touchend',   ted, {passive:false});
+  window.addEventListener('resize', resizeCanvas);
+}
+
+function resizeCanvas() {
+  const outer = document.getElementById('canvasOuter');
+  const w = outer.getBoundingClientRect().width || outer.offsetWidth || 320;
+  const h = Math.max(200, Math.min(300, window.innerHeight * 0.28));
+  canvas.width  = Math.round(w);
+  canvas.height = Math.round(h);
+  outer.style.height = h + 'px';
+  redraw();
+}
+
+function gp(cx, cy) {
+  const r = canvas.getBoundingClientRect();
+  return {
+    x: (cx - r.left) * (canvas.width  / (r.width  || 1)),
+    y: (cy - r.top)  * (canvas.height / (r.height || 1))
+  };
+}
+
+function sd(e) {
+  if (e.pointerType === 'touch' && touchActive) return;
+  e.preventDefault();
+  drawing = true;
+  try { canvas.setPointerCapture(e.pointerId); } catch(_) {}
+  curStroke = [];
+  const p = gp(e.clientX, e.clientY);
+  curStroke.push({x:p.x, y:p.y, c:penColor, s:penSz});
+  document.getElementById('canvasHint').style.opacity = '0';
+}
+function dr(e) {
+  if (!drawing || (e.pointerType === 'touch' && touchActive)) return;
+  e.preventDefault();
+  const p = gp(e.clientX, e.clientY);
+  curStroke.push({x:p.x, y:p.y, c:penColor, s:penSz});
+  redraw(); drawStroke(curStroke);
+}
+function ed(e) {
+  if (e.pointerType === 'touch' && touchActive) return;
+  if (!drawing) return;
+  drawing = false;
+  if (curStroke.length > 1) strokes.push([...curStroke]);
+  curStroke = [];
+}
+function tsd(e) {
+  e.preventDefault(); touchActive = true; drawing = true;
+  curStroke = [];
+  const t = e.touches[0], p = gp(t.clientX, t.clientY);
+  curStroke.push({x:p.x, y:p.y, c:penColor, s:penSz});
+  document.getElementById('canvasHint').style.opacity = '0';
+}
+function tdr(e) {
+  if (!drawing) return; e.preventDefault();
+  const t = e.touches[0], p = gp(t.clientX, t.clientY);
+  curStroke.push({x:p.x, y:p.y, c:penColor, s:penSz});
+  redraw(); drawStroke(curStroke);
+}
+function ted(e) {
+  e.preventDefault(); touchActive = false;
+  if (!drawing) return; drawing = false;
+  if (curStroke.length > 1) strokes.push([...curStroke]);
+  curStroke = [];
+}
+
+function drawStroke(pts) {
+  if (pts.length < 2) return;
+  ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+  ctx.strokeStyle = pts[0].c; ctx.lineWidth = pts[0].s;
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
+}
+function redraw() { ctx.clearRect(0,0,canvas.width,canvas.height); strokes.forEach(s=>drawStroke(s)); }
+function clearCanvas() { strokes=[]; curStroke=[]; redraw(); document.getElementById('canvasHint').style.opacity='1'; }
+function undoStroke() { if(strokes.length>0){strokes.pop();redraw();} }
+function setColor(el) { penColor=el.dataset.c; document.querySelectorAll('.cdot').forEach(d=>d.classList.remove('sel')); el.classList.add('sel'); }
+
+// ══════════════════════════════════════════════════════
+//  SCREENS
+// ══════════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function selectSubject(s) {
+  subject = s;
+  document.getElementById('subjMath').classList.toggle('active', s==='math');
+  document.getElementById('subjEng').classList.toggle('active', s==='english');
+}
+function goHome() {
+  showScreen('gradeScreen');
+  score=0; correctCount=0; comboCount=0; maxCombo=0; lives=3; hintsUsed=0; qIndex=0; usedIndices=[];
+}
+
+// ══════════════════════════════════════════════════════
+//  QUIZ
+// ══════════════════════════════════════════════════════
+function startQuiz(g) {
+  grade=g; qIndex=0; score=0; correctCount=0;
+  comboCount=0; maxCombo=0; lives=3; hintsUsed=0; usedIndices=[];
+  document.getElementById('hudGrade').textContent = `🚀 ${g}학년`;
+  updateHUD();
+  showScreen('quizScreen');
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    resizeCanvas();
+    loadQuestion();
+  }));
+}
+
+function pickQ() {
+  const pool = QB[subject][grade];
+  const avail = pool.map((_,i)=>i).filter(i=>!usedIndices.includes(i));
+  if (!avail.length) { usedIndices=[]; return pickQ(); }
+  const i = avail[Math.floor(Math.random()*avail.length)];
+  usedIndices.push(i);
+  return pool[i];
+}
+
+function loadQuestion() {
+  currentQ = pickQ();
+  hintUsedThisQ = false;
+  const typeLabel = {story:'📖 스토리',pattern:'🔢 패턴',logic:'🧠 논리',word:'📝 단어',grammar:'📚 문법'};
+  document.getElementById('qTypeBadge').textContent = typeLabel[currentQ.type] || '📖';
+  document.getElementById('qTypeBadge').className = 'q-type-badge ' + currentQ.badge;
+  document.getElementById('qNum').textContent = (qIndex+1) + ' / ' + TOTAL;
+  document.getElementById('qText').textContent = currentQ.text;
+  document.getElementById('hintBox').textContent = currentQ.hint;
+  document.getElementById('hintBox').classList.remove('show');
+  document.getElementById('progFill').style.width = (qIndex/TOTAL*100)+'%';
+  clearCanvas();
+  hideResult();
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('nextBtn').classList.remove('show');
+  updateHUD();
+}
+
+function toggleHint() {
+  const box = document.getElementById('hintBox');
+  box.classList.toggle('show');
+  if (box.classList.contains('show') && !hintUsedThisQ) {
+    hintUsedThisQ=true; hintsUsed++;
+    score=Math.max(0,score-2);
+    updateHUD();
+  }
+}
+
+function updateHUD() {
+  document.getElementById('scoreDisp').textContent = score;
+  document.getElementById('livesDisp').textContent = '❤️'.repeat(lives)+'🖤'.repeat(Math.max(0,3-lives));
+  const cc = document.getElementById('hudCombo');
+  if (comboCount>=2) { cc.textContent=`🔥 콤보 ×${comboCount}`; cc.classList.add('show'); }
+  else cc.classList.remove('show');
+}
+
+function hideResult() {
+  const r = document.getElementById('resultCard');
+  r.className='result-card'; r.style.display='none';
+  document.getElementById('resAnswer').style.display='none';
+}
+
+// ══════════════════════════════════════════════════════
+//  AI GRADING  — /api/grade (Netlify Function)
+// ══════════════════════════════════════════════════════
+async function submitAnswer() {
+  if (strokes.length===0) {
+    showResult('loading','✏️ 먼저 답을 써주세요!','',null);
+    return;
+  }
+  document.getElementById('submitBtn').disabled = true;
+  showResult('loading','<span class="loading-dots"><span>🤖</span><span>채점</span><span>중...</span></span>','',null);
+
+  const imageData = canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+
+  try {
+    const res = await fetch('/api/grade', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        imageData,
+        question: currentQ.text,
+        answer:   currentQ.answer,
+        hint:     currentQ.hint,
+        grade,
+        type: currentQ.type
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(()=>({}));
+      document.getElementById('submitBtn').disabled = false;
+      showResult('wrong', '⚠️ 오류', err.error || `서버 오류 (${res.status})`, null);
+      return;
+    }
+
+    const r = await res.json();
+
+    qIndex++;
+    const pts = hintUsedThisQ ? (r.correct?8:0) : (r.correct?10:0);
+    if (r.correct) { score+=pts; correctCount++; comboCount++; if(comboCount>maxCombo) maxCombo=comboCount; showCombo(); }
+    else           { lives=Math.max(0,lives-1); comboCount=0; }
+    updateHUD();
+
+    if (r.correct) {
+      showResult('correct','🎉 정답이에요!', r.feedback, `인식: ${r.recognized} ✓ (+${pts}점)`);
+    } else {
+      showResult('wrong','❌ 아쉬워요!', r.feedback+(r.explanation?'<br>'+r.explanation:''), `정답: ${currentQ.answer}  |  인식: ${r.recognized}`);
+    }
+
+    if (qIndex>=TOTAL || lives<=0) setTimeout(showFinish, 1800);
+    else document.getElementById('nextBtn').classList.add('show');
+    if (r.correct) launchConfetti();
+
+  } catch(e) {
+    document.getElementById('submitBtn').disabled = false;
+    showResult('wrong','⚠️ 네트워크 오류', '인터넷 연결을 확인해주세요.<br>'+e.message, null);
+  }
+}
+
+function showResult(type,title,body,answer) {
+  const c = document.getElementById('resultCard');
+  c.className='result-card show '+type; c.style.display='block';
+  document.getElementById('resTitle').innerHTML=title;
+  document.getElementById('resBody').innerHTML=body;
+  const a = document.getElementById('resAnswer');
+  if (answer) { a.textContent=answer; a.style.display='block'; }
+  else a.style.display='none';
+}
+
+function nextQuestion() { loadQuestion(); }
+
+// ══════════════════════════════════════════════════════
+//  FINISH
+// ══════════════════════════════════════════════════════
+function showFinish() {
+  showScreen('finishScreen');
+  const pct = correctCount / TOTAL;
+  const sc = pct>=.9?5:pct>=.7?4:pct>=.5?3:pct>=.3?2:1;
+  document.getElementById('finStars').textContent = '⭐'.repeat(sc)+'☆'.repeat(5-sc);
+  document.getElementById('finScore').textContent = score+'점';
+  document.getElementById('statCorrect').textContent = correctCount+'/'+qIndex;
+  document.getElementById('statCombo').textContent = maxCombo+'연속';
+  document.getElementById('statHints').textContent = hintsUsed+'번';
+  document.getElementById('statGrade').textContent = grade+'학년';
+  const planets = ['🌱','🌊','⚡','🔥','🪐','🌌'];
+  document.getElementById('finPlanet').textContent = planets[grade-1];
+  const msgs = ['처음엔 누구나 어려워요! 다시 도전해봐요! 💪','조금 더 연습하면 완벽해질 거예요! 🔥','잘 했어요! 다음엔 더 잘할 수 있어요! ⭐','훌륭해요! 조금만 더 하면 만점! 🎯','정말 잘했어요! 멋진 실력이에요! 🏆'];
+  document.getElementById('finMsg').textContent = msgs[Math.min(sc-1,msgs.length-1)];
+  if (sc>=4) launchConfetti(true);
+}
+
+// ══════════════════════════════════════════════════════
+//  EFFECTS
+// ══════════════════════════════════════════════════════
+function launchConfetti(big=false) {
+  const n=big?60:25, colors=['#f9d923','#ff6b9d','#60efff','#39ff88','#ff9a3c','#a78bfa'];
+  const wrap=document.createElement('div'); wrap.className='confetti-wrap';
+  for(let i=0;i<n;i++){
+    const c=document.createElement('div'); c.className='cf';
+    c.style.cssText=`left:${Math.random()*100}%;background:${colors[i%colors.length]};width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;--d:${1+Math.random()*1.5}s;--dl:${Math.random()*.5}s;--dx:${(Math.random()-.5)*200}px;border-radius:${Math.random()>.5?'50%':'2px'};`;
+    wrap.appendChild(c);
+  }
+  document.body.appendChild(wrap);
+  setTimeout(()=>wrap.remove(),2500);
+}
+
+function showCombo() {
+  if (comboCount<2) return;
+  const el=document.getElementById('comboBurst');
+  el.textContent=comboCount>=5?`🔥 ${comboCount}연속! 천재!`:comboCount>=3?`⚡ ${comboCount}연속! 대박!`:`🎯 ${comboCount}연속!`;
+  el.style.display='block'; el.style.animation='none'; void el.offsetWidth;
+  el.style.animation='burst .8s ease forwards';
+  setTimeout(()=>el.style.display='none',900);
+}
+
+function makeStars() {
+  const sf=document.getElementById('starfield');
+  for(let i=0;i<80;i++){
+    const s=document.createElement('div'); s.className='star-dot';
+    const sz=Math.random()*2.5+.5;
+    s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;--delay:${Math.random()*3}s;`;
+    sf.appendChild(s);
+  }
+}
+
+window.addEventListener('DOMContentLoaded', ()=>{ initCanvas(); makeStars(); });
+</script>
+</body>
+</html>
